@@ -67,11 +67,11 @@ const run = async () => {
 	app.use(express.static(FRONTENDPATH));
 	app.get('*', (req,res) =>res.sendFile(FRONTENDPATH+'/index.html'));
 	let time = +new Date();
-	let port = Number(process.env.HTTP_PORT);
+	let port = Number(process.env.HTTP_PORT || 80);
 	await new Promise(resolve=>server.listen(port, ()=>resolve(true)));
 	setlog(`Started HTTP service on port ${port}. ${+new Date()-time}ms`);
 	time = +new Date();
-	port = Number(process.env.HTTPS_PORT);
+	port = Number(process.env.HTTPS_PORT || 443);
 	await new Promise(resolve=>httpsServer.listen(port, ()=>resolve(true)));
 	setlog(`Started HTTPS service on port ${port}. ${+new Date()-time}ms`);
 }
