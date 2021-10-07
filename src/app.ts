@@ -59,13 +59,17 @@ const run = async () => {
 				'https://185.25.51.72',
 			]
 			if (origin===undefined || hosts.indexOf(origin)!==-1) return callback(null, true);
+			console.log("blocked", origin)
 			return;
 		}
 	}));
 
 	const FRONTENDPATH = path.normalize(__dirname + '/../../frontend/build');
 	app.use(express.static(FRONTENDPATH));
-	app.get('*', (req,res) =>res.sendFile(FRONTENDPATH+'/index.html'));
+	app.get('*', (req,res) =>{
+		console.log("request:", req.originalUrl)
+		res.sendFile(FRONTENDPATH+'/index.html')
+	});
 	let time = +new Date();
 	let port = Number(process.env.HTTP_PORT || 80);
 	await new Promise(resolve=>server.listen(port, ()=>resolve(true)));
