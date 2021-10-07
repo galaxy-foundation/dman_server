@@ -6,7 +6,6 @@ artifacts
 ref
 dist
 .vscode
-certs
 files
 # misc
 .env
