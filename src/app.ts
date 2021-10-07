@@ -55,8 +55,8 @@ const run = async () => {
 				'http://localhost',
 				'https://localhost:8443',
 				'http://localhost:3000',
-				'http://dman.com',
-				'https://dman.com',
+				'http://185.25.51.72',
+				'https://185.25.51.72',
 			]
 			if (origin===undefined || hosts.indexOf(origin)!==-1) return callback(null, true);
 			return;
