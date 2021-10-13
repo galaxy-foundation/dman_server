@@ -66,10 +66,10 @@ const run = async () => {
 
 	const FRONTENDPATH = path.normalize(__dirname + '/../../frontend/build');
 	app.use(express.static(FRONTENDPATH));
-	app.get('*', (req,res) =>{
+	/* app.get('*', (req,res) =>{
 		console.log("request:", req.originalUrl)
 		res.sendFile(FRONTENDPATH+'/index.html')
-	});
+	}); */
 	let time = +new Date();
 	let port = Number(process.env.HTTP_PORT || 80);
 	await new Promise(resolve=>server.listen(port, ()=>resolve(true)));
