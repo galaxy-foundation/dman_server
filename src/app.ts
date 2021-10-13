@@ -105,17 +105,13 @@ const run = async () => {
 
 	const FRONTENDPATH = path.normalize(__dirname + '/../../frontend/build');
 	app.use(express.static(FRONTENDPATH));
-	/* app.get('*', (req,res) =>{
+	app.get('*', (req,res) =>{
 		console.log("request:", req.originalUrl)
 		res.sendFile(FRONTENDPATH+'/index.html')
-<<<<<<< HEAD
-	}); */
-=======
 	});
 
 	app.post("/api/getCoinPrice",getCoinPrices);
 
->>>>>>> df442094c77c4267776c81a2b06f21edffdedfbb
 	let time = +new Date();
 	let port = Number(process.env.HTTP_PORT || 3030);
 	await new Promise(resolve=>server.listen(port, ()=>resolve(true)));
