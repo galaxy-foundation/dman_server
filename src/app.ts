@@ -9,6 +9,7 @@ import * as path from 'path';
 import * as express from 'express';
 import * as shrinkRay from 'shrink-ray-current'
 import * as cors from 'cors'
+import axios from "axios"
 
 process.on("uncaughtException", (err:Error) => setlog('exception',err));
 process.on("unhandledRejection", (err:Error) => setlog('rejection',err));
@@ -31,13 +32,51 @@ export const setlog=(title:string='started',msg:string|Error|null=null):void=>{
     }
     if (msg) msg = msg.split(/\r\n|\r|\n/g).map(v=>'\t'+v).join('');
     let text = `[${timetext}] ${title}\r\n${msg===null?'':msg+'\r\n'}`;
-    fs.appendFileSync(__dirname+'/../logs/'+datetext+'.log',(bStart?'\r\n\r\n\r\n':'')+text);
+    // fs.appendFileSync(__dirname+'/../logs/'+datetext+'.log',(bStart?'\r\n\r\n\r\n':'')+text);
     if (process.env.NODE_ENV !== 'production') console.log(text);
 };
 
 Date.now = () => Math.round((new Date().getTime()) / 1000);
 
+const stakeTokenList = [
+	"DM",
+	"USDT",
+	"ETH",
+	"TRX",
+	"FIL",
+	"XRP",
+	"DOT",
+	"ADA",
+	"HT"
+]
+
+var coinPrices:any = {};
+
+async function updateRate(){
+	try {
+	var res :any = await axios.get("https://api.coingecko.com/api/v3/simple/price?ids=ethereum,tron,filecoin,ripple,polkadot,cardano,huobi-token&vs_currencies=usd");
+		coinPrices["DM"] = 1;
+		coinPrices["USDT"] = 1;
+		coinPrices["ETH"] = res.data.ethereum.usd;
+		coinPrices["TRX"] = res.data.tron.usd;
+		coinPrices["FIL"] = res.data.filecoin.usd;
+		coinPrices["XRP"] = res.data.ripple.usd;
+		coinPrices["DOT"] = res.data.polkadot.usd;
+		coinPrices["ADA"] = res.data.cardano.usd;
+		coinPrices["HT"] = res.data["huobi-token"].usd;
+	}catch(err){
+		console.log("request error",err.Error)
+	}
+}
+
+const getCoinPrices = (req,res) => {
+	res.json(coinPrices);
+}
+
 const run = async () => { 
+
+	setInterval(updateRate,15000);
+
 	const app = express()
 	const server = http.createServer(app);
 	const key = fs.readFileSync(__dirname+'/../certs/server.key', 'utf8');
@@ -69,9 +108,16 @@ const run = async () => {
 	/* app.get('*', (req,res) =>{
 		console.log("request:", req.originalUrl)
 		res.sendFile(FRONTENDPATH+'/index.html')
+<<<<<<< HEAD
 	}); */
+=======
+	});
+
+	app.post("/api/getCoinPrice",getCoinPrices);
+
+>>>>>>> df442094c77c4267776c81a2b06f21edffdedfbb
 	let time = +new Date();
-	let port = Number(process.env.HTTP_PORT || 80);
+	let port = Number(process.env.HTTP_PORT || 3030);
 	await new Promise(resolve=>server.listen(port, ()=>resolve(true)));
 	setlog(`Started HTTP service on port ${port}. ${+new Date()-time}ms`);
 	time = +new Date();
