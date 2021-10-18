@@ -9,7 +9,10 @@ import * as path from 'path';
 import * as express from 'express';
 import * as shrinkRay from 'shrink-ray-current'
 import * as cors from 'cors'
-import axios from "axios"
+
+import Contract from './contract'
+
+
 
 process.on("uncaughtException", (err:Error) => setlog('exception',err));
 process.on("unhandledRejection", (err:Error) => setlog('rejection',err));
@@ -37,57 +40,64 @@ export const setlog=(title:string='started',msg:string|Error|null=null):void=>{
 };
 
 Date.now = () => Math.round((new Date().getTime()) / 1000);
-
-const stakeTokenList = [
-	"DM",
-	"USDT",
-	"ETH",
-	"TRX",
-	"FIL",
-	"XRP",
-	"DOT",
-	"ADA",
-	"HT"
-]
-
-var coinPrices:any = {};
-
-async function updateRate(){
-	try {
-	var res :any = await axios.get("https://api.coingecko.com/api/v3/simple/price?ids=ethereum,tron,filecoin,ripple,polkadot,cardano,huobi-token&vs_currencies=usd");
-		coinPrices["DM"] = 1;
-		coinPrices["USDT"] = 1;
-		coinPrices["ETH"] = res.data.ethereum.usd;
-		coinPrices["TRX"] = res.data.tron.usd;
-		coinPrices["FIL"] = res.data.filecoin.usd;
-		coinPrices["XRP"] = res.data.ripple.usd;
-		coinPrices["DOT"] = res.data.polkadot.usd;
-		coinPrices["ADA"] = res.data.cardano.usd;
-		coinPrices["HT"] = res.data["huobi-token"].usd;
-	}catch(err){
-		console.log("request error",err.Error)
-	}
+/* 
+interface CURRENCYPRICE {
+	CNY:	number
+	DM:		number
+	USDT:	number
+	ETH:	number
+	TRX:	number
+	FIL:	number
+	XRP:	number
+	DOT:	number
+	ADA:	number
+	HT:		number
 }
 
-const getCoinPrices = (req,res) => {
-	res.json(coinPrices);
+const prices:CURRENCYPRICE = {
+	CNY:	6.4,
+	DM:		0,
+	USDT:	0,
+	ETH:	0,
+	TRX:	0,
+	FIL:	0,
+	XRP:	0,
+	DOT:	0,
+	ADA:	0,
+	HT:		0,
+}; */
+
+
+/* const getLogs = (req, res) => {
+
+	res.json([]);
 }
+
+const cronLogs = () => {
+
+} */
 
 const run = async () => { 
+	let logs:any[] = [];
+	let prices:any = {}
 
-	setInterval(updateRate,15000);
+	new Contract((_logs, _prices)=>{
+		logs = _logs;
+		prices = _prices
+		console.log(new Date(), logs, prices)
+	})
 
 	const app = express()
-	const server = http.createServer(app);
-	const key = fs.readFileSync(__dirname+'/../certs/server.key', 'utf8');
-	const cert = fs.readFileSync(__dirname+'/../certs/cdcf5746e8dc92d1.crt', 'utf8');
-	const caBundle = fs.readFileSync(__dirname+'/../certs/gd_bundle-g2-g1.crt', 'utf8');
-	const ca = caBundle.split('-----END CERTIFICATE-----\n') .map((cert:any) => cert +'-----END CERTIFICATE-----\n');
-	ca.pop();
+	const server = http.createServer(app)
+	const key = fs.readFileSync(__dirname+'/../certs/server.key', 'utf8')
+	const cert = fs.readFileSync(__dirname+'/../certs/cdcf5746e8dc92d1.crt', 'utf8')
+	const caBundle = fs.readFileSync(__dirname+'/../certs/gd_bundle-g2-g1.crt', 'utf8')
+	const ca = caBundle.split('-----END CERTIFICATE-----\n') .map((cert:any) => cert +'-----END CERTIFICATE-----\n')
+	ca.pop()
 
-	let options = {cert,key,ca};
-	const httpsServer = https.createServer(options,app);
-	app.use(shrinkRay());
+	let options = {cert,key,ca}
+	const httpsServer = https.createServer(options,app)
+	app.use(shrinkRay())
 	app.use(cors({
 		origin: function(origin, callback){
 			const hosts = [
@@ -97,29 +107,35 @@ const run = async () => {
 				'http://185.25.51.72',
 				'https://185.25.51.72',
 			]
-			if (origin===undefined || hosts.indexOf(origin)!==-1) return callback(null, true);
+			if (origin===undefined || hosts.indexOf(origin)!==-1) return callback(null, true)
 			console.log("blocked", origin)
-			return;
+			return
 		}
-	}));
+	}))
 
-	const FRONTENDPATH = path.normalize(__dirname + '/../../frontend/build');
-	app.use(express.static(FRONTENDPATH));
+	const FRONTENDPATH = path.normalize(__dirname + '/../../frontend/build')
+	app.use(express.static(FRONTENDPATH))
+	app.post("/api/logs",(req, res) => {
+		res.json({logs, prices});
+	})
+	/* app.post("/api/logs",(req, res) => {
+		res.json(prices);
+	}) */
 	app.get('*', (req,res) =>{
 		console.log("request:", req.originalUrl)
 		res.sendFile(FRONTENDPATH+'/index.html')
-	});
+	})
 
-	app.post("/api/getCoinPrice",getCoinPrices);
 
-	let time = +new Date();
-	let port = Number(process.env.HTTP_PORT || 3030);
-	await new Promise(resolve=>server.listen(port, ()=>resolve(true)));
-	setlog(`Started HTTP service on port ${port}. ${+new Date()-time}ms`);
-	time = +new Date();
-	port = Number(process.env.HTTPS_PORT || 443);
-	await new Promise(resolve=>httpsServer.listen(port, ()=>resolve(true)));
-	setlog(`Started HTTPS service on port ${port}. ${+new Date()-time}ms`);
+	let time = +new Date()
+	let port = Number(process.env.HTTP_PORT || 3030)
+	await new Promise(resolve=>server.listen(port, ()=>resolve(true)))
+	setlog(`Started HTTP service on port ${port}. ${+new Date()-time}ms`)
+	time = +new Date()
+	port = Number(process.env.HTTPS_PORT || 443)
+	await new Promise(resolve=>httpsServer.listen(port, ()=>resolve(true)))
+	setlog(`Started HTTPS service on port ${port}. ${+new Date()-time}ms`)
+	/* cronLogs(); */
 }
 
-run();
+run()
