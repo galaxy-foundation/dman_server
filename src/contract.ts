@@ -36,6 +36,8 @@ export interface LOGTYPE {
 	tvl:number
 }
 
+const MAX = 24
+
 export default class Contract {
 	cb:(logs:any, prices:PRICETYPE)=>void;
 	
@@ -51,7 +53,7 @@ export default class Contract {
 			password: process.env.DB_PASS,
 			database: process.env.DB_NAME,
 		}).then(async ()=>{
-			const rows = await Logs.find({}, {id:-1},null, {limit:10})
+			const rows = await Logs.find({}, {id:-1},null, {limit:MAX})
 			if (rows) {
 				for(let k=rows.length-1; k>=0; k--) {
 					const v = rows[k]
@@ -60,6 +62,7 @@ export default class Contract {
 			}
 			await this.readFiats()
 			await this.readCryptos()
+			await this.readContract();
 			setInterval(this.readFiats.bind(this), 43200000)
 			setInterval(this.readCryptos.bind(this), 15000)
 			setInterval(this.readContract.bind(this), 15000)
@@ -158,6 +161,7 @@ export default class Contract {
 				tvl += _total * this.prices[v.token];
 			}
 			if (!isNaN(tvl)) {
+				tvl = Math.round(tvl*100)/100;
 				let now = Math.round(new Date().getTime() / 1000);
 				let id = now - now % 3600;
 				await Logs.insertOrUpdate({id, tvl})
@@ -165,7 +169,7 @@ export default class Contract {
 					if (this.logs[this.logs.length-1].time===id) {
 						this.logs[this.logs.length-1] = {time:id, tvl}
 					} else {
-						if (this.logs.length===10) this.logs.shift();
+						if (this.logs.length===MAX) this.logs.shift();
 						this.logs.push({time:id, tvl})
 					}
 				} else {
