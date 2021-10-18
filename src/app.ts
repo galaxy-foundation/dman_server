@@ -100,7 +100,8 @@ const run = async () => {
 	app.use(shrinkRay())
 	app.use(cors({
 		origin: function(origin, callback){
-			const hosts = [
+			return callback(null, true)
+			/* const hosts = [
 				'http://localhost',
 				'https://localhost:8443',
 				'http://localhost:3000',
@@ -109,7 +110,7 @@ const run = async () => {
 			]
 			if (origin===undefined || hosts.indexOf(origin)!==-1) return callback(null, true)
 			console.log("blocked", origin)
-			return
+			return */
 		}
 	}))
 
