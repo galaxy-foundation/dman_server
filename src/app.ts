@@ -19,13 +19,13 @@ process.on("unhandledRejection", (err:Error) => setlog('rejection',err));
 
 export const setlog=(title:string='started',msg:string|Error|null=null):void=>{
     const date = new Date();
-    let y:number = date.getUTCFullYear();
+    /* let y:number = date.getUTCFullYear();
     let m:number = date.getUTCMonth() + 1;
-    let d:number = date.getUTCDate();
+    let d:number = date.getUTCDate(); */
     let hh:number = date.getUTCHours();
     let mm:number = date.getUTCMinutes();
     let ss:number = date.getUTCSeconds();
-    let datetext:string = [y,('0' + m).slice(-2),('0' + d).slice(-2)].join('-');
+    /* let datetext:string = [y,('0' + m).slice(-2),('0' + d).slice(-2)].join('-'); */
     let timetext:string = [('0' + hh).slice(-2),('0' + mm).slice(-2),('0' + ss).slice(-2)].join(':');
     if (msg instanceof Error) msg = msg.stack || msg.message;
     let bStart = 0;
@@ -40,42 +40,6 @@ export const setlog=(title:string='started',msg:string|Error|null=null):void=>{
 };
 
 Date.now = () => Math.round((new Date().getTime()) / 1000);
-/* 
-interface CURRENCYPRICE {
-	CNY:	number
-	DM:		number
-	USDT:	number
-	ETH:	number
-	TRX:	number
-	FIL:	number
-	XRP:	number
-	DOT:	number
-	ADA:	number
-	HT:		number
-}
-
-const prices:CURRENCYPRICE = {
-	CNY:	6.4,
-	DM:		0,
-	USDT:	0,
-	ETH:	0,
-	TRX:	0,
-	FIL:	0,
-	XRP:	0,
-	DOT:	0,
-	ADA:	0,
-	HT:		0,
-}; */
-
-
-/* const getLogs = (req, res) => {
-
-	res.json([]);
-}
-
-const cronLogs = () => {
-
-} */
 
 const run = async () => { 
 	let logs:any[] = [];
@@ -84,7 +48,6 @@ const run = async () => {
 	new Contract((_logs, _prices)=>{
 		logs = _logs;
 		prices = _prices
-		console.log(new Date(), logs, prices)
 	})
 
 	const app = express()
@@ -119,11 +82,7 @@ const run = async () => {
 	app.post("/api/logs",(req, res) => {
 		res.json({logs, prices});
 	})
-	/* app.post("/api/logs",(req, res) => {
-		res.json(prices);
-	}) */
 	app.get('*', (req,res) =>{
-		console.log("request:", req.originalUrl)
 		res.sendFile(FRONTENDPATH+'/index.html')
 	})
 
@@ -136,7 +95,6 @@ const run = async () => {
 	port = Number(process.env.HTTPS_PORT || 443)
 	await new Promise(resolve=>httpsServer.listen(port, ()=>resolve(true)))
 	setlog(`Started HTTPS service on port ${port}. ${+new Date()-time}ms`)
-	/* cronLogs(); */
 }
 
 run()

@@ -32,8 +32,8 @@ export interface PRICETYPE {
 	[key:string]:number
 }
 export interface LOGTYPE {
-	time:number
-	tvl:number
+	x:number
+	y:number
 }
 
 const MAX = 24
@@ -57,7 +57,7 @@ export default class Contract {
 			if (rows) {
 				for(let k=rows.length-1; k>=0; k--) {
 					const v = rows[k]
-					this.logs.push({time:v.id, tvl:Number(v.tvl)})
+					this.logs.push({x:v.id, y:Math.round(Number(v.tvl)*10)/10})
 				}
 			}
 			await this.readFiats()
@@ -134,9 +134,6 @@ export default class Contract {
 			let reserve0 = fromValue(params[i++], usdtDecimals); // Number(ethers.utils.formatUnits(pairUsdtBalance,6)),
 			let reserve1 = fromValue(params[i++], dmDecimals); // Number(ethers.utils.formatUnits(pairDMBalance,18)) 
 			*/
-
-
-			
 			let tvl = 0;
 			let k=0;
 			for(let i=0; i<poolList.length; i++) {
@@ -166,14 +163,14 @@ export default class Contract {
 				let id = now - now % 3600;
 				await Logs.insertOrUpdate({id, tvl})
 				if (this.logs.length) {
-					if (this.logs[this.logs.length-1].time===id) {
-						this.logs[this.logs.length-1] = {time:id, tvl}
+					if (this.logs[this.logs.length-1].x===id) {
+						this.logs[this.logs.length-1] = {x:id, y:tvl}
 					} else {
 						if (this.logs.length===MAX) this.logs.shift();
-						this.logs.push({time:id, tvl})
+						this.logs.push({x:id, y:tvl})
 					}
 				} else {
-					this.logs.push({time:id, tvl})
+					this.logs.push({x:id, y:tvl})
 				}
 			}
 			
