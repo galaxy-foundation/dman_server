@@ -9,7 +9,7 @@ dist
 files
 # misc
 .env
-
+certs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
