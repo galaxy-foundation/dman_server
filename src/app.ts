@@ -52,8 +52,8 @@ const run = async () => {
 
 	const app = express()
 	const server = http.createServer(app)
-	const key = fs.readFileSync(__dirname+'/../certs/server.key', 'utf8')
-	const cert = fs.readFileSync(__dirname+'/../certs/cdcf5746e8dc92d1.crt', 'utf8')
+	const key = fs.readFileSync(__dirname+'/../certs/generated-private.key', 'utf8')
+	const cert = fs.readFileSync(__dirname+'/../certs/29baf73c7f59916d.crt', 'utf8')
 	const caBundle = fs.readFileSync(__dirname+'/../certs/gd_bundle-g2-g1.crt', 'utf8')
 	const ca = caBundle.split('-----END CERTIFICATE-----\n') .map((cert:any) => cert +'-----END CERTIFICATE-----\n')
 	ca.pop()
@@ -64,16 +64,6 @@ const run = async () => {
 	app.use(cors({
 		origin: function(origin, callback){
 			return callback(null, true)
-			/* const hosts = [
-				'http://localhost',
-				'https://localhost:8443',
-				'http://localhost:3000',
-				'http://185.25.51.72',
-				'https://185.25.51.72',
-			]
-			if (origin===undefined || hosts.indexOf(origin)!==-1) return callback(null, true)
-			console.log("blocked", origin)
-			return */
 		}
 	}))
 
